@@ -458,7 +458,7 @@
                 </button>
               </div>
               <div class="form-text">
-                Only private keys accepted: SUI (suiprivkey1...), BTC/FLO (WIF format) - NO addresses
+                Only private keys accepted
               </div>
             </div>
 
@@ -1515,7 +1515,7 @@
       } else if (selectedType === 'hash') {
         inputLabel.innerHTML = '<i class="fas fa-fingerprint"></i> Transaction Hash';
         searchInput.placeholder = 'Enter SUI transaction hash';
-        inputHelp.textContent = 'Enter a SUI transaction hash (base58 format, 43-44 characters) to view transaction details';
+        inputHelp.textContent = 'Enter a SUI transaction hash to view transaction details';
         document.getElementById('searchBtn').innerHTML = '<i class="fas fa-fingerprint"></i> Lookup Hash';
         
         loadSearchedAddresses();
