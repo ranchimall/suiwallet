@@ -1772,15 +1772,15 @@
           <div class="tx-details compact">
             <div class="tx-detail-row">
               <span class="tx-label">Hash:</span>
-              <span class="tx-value tx-hash" onclick="window.open('https://www.oklink.com/sui/tx/${tx.digest}', '_blank')">${tx.digest.slice(0, 8)}...</span>
+              <span class="tx-value tx-hash" onclick="window.open('https://www.oklink.com/sui/tx/${tx.digest}', '_blank')">${tx.digest}</span>
             </div>
             <div class="tx-detail-row">
               <span class="tx-label">From:</span>
-              <span class="tx-value full-address">${tx.from.slice(0, 6)}...${tx.from.slice(-4)}</span>
+              <span class="tx-value full-address">${tx.from}</span>
             </div>
             <div class="tx-detail-row">
               <span class="tx-label">To:</span>
-              <span class="tx-value full-address">${tx.to !== 'Unknown' ? tx.to.slice(0, 6) + '...' + tx.to.slice(-4) : 'Unknown'}</span>
+              <span class="tx-value full-address">${tx.to !== 'Unknown' ? tx.to : 'Unknown'}</span>
             </div>
             ${tx.errorMessage ? `
             <div class="tx-detail-row error">
