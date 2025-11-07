@@ -88,49 +88,66 @@ const suiBlockchainAPI = {
         const balanceChanges = tx.balanceChanges || [];
         const status = tx.effects?.status?.status || "unknown";
 
-        // Find recipient and amount from balance changes or transaction inputs
+        // Find recipient and amount from transaction inputs first 
         let to = "Unknown";
         let amountMist = 0;
 
-        if (status === "success") {
-          // For successful transactions, get from balance changes
+        const inputs = tx.transaction?.data?.transaction?.inputs || [];
+
+        // Find the address input (recipient)
+        const addressInput = inputs.find(
+          (input) => input.type === "pure" && input.valueType === "address"
+        );
+
+        // Find the amount input
+        const amountInput = inputs.find(
+          (input) => input.type === "pure" && input.valueType === "u64"
+        );
+
+        if (addressInput) {
+          to = addressInput.value;
+        }
+
+        if (amountInput) {
+          amountMist = parseInt(amountInput.value);
+        }
+
+        
+        if ((to === "Unknown" || amountMist === 0) && status === "success") {
+          // For successful transactions, check balance changes for different owner
           for (const change of balanceChanges) {
             if (
               change.owner?.AddressOwner &&
               change.owner.AddressOwner.toLowerCase() !== from.toLowerCase()
             ) {
-              to = change.owner.AddressOwner;
-              amountMist = Math.abs(Number(change.amount || 0));
+              if (to === "Unknown") {
+                to = change.owner.AddressOwner;
+              }
+              if (amountMist === 0) {
+                amountMist = Math.abs(Number(change.amount || 0));
+              }
               break;
             }
           }
-        } else {
-          // For failed transactions, get intended recipient from transaction inputs
-          const inputs = tx.transaction?.data?.transaction?.inputs || [];
+        }
 
-          const addressInput = inputs.find(
-            (input) => input.type === "pure" && input.valueType === "address"
-          );
-
-          // Find the amount input
-          const amountInput = inputs.find(
-            (input) => input.type === "pure" && input.valueType === "u64"
-          );
-
-          if (addressInput) {
-            to = addressInput.value;
-          }
-
-          if (amountInput) {
-            amountMist = parseInt(amountInput.value);
-          }
-
+        // If still no amount found, get from gas changes (for failed transactions or gas-only)
+        if (amountMist === 0) {
           const gasChange = balanceChanges.find(
             (change) =>
               change.owner?.AddressOwner?.toLowerCase() === from.toLowerCase()
           );
-          if (gasChange && !amountMist) {
-            amountMist = Math.abs(Number(gasChange.amount || 0));
+          if (gasChange) {
+            const totalChange = Math.abs(Number(gasChange.amount || 0));
+            const gasEstimate = 1500000; // Typical gas cost in MIST
+
+            // Only use balance change as amount if it's significantly more than gas
+            if (totalChange > gasEstimate * 2) {
+              amountMist = totalChange - gasEstimate;
+            } else if (status !== "success") {
+              // For failed transactions, show the intended amount
+              amountMist = totalChange;
+            }
           }
         }
 
@@ -356,59 +373,72 @@ const suiBlockchainAPI = {
       let amount = 0;
       let coinType = "0x2::sui::SUI";
 
-      if (status === "success") {
-        // For successful transactions, check events first
+      // First, try to get recipient and amount from transaction inputs (works for all transactions)
+      const inputs = txData.transaction?.data?.transaction?.inputs || [];
+
+      // Find the address input (recipient)
+      const addressInput = inputs.find(
+        (input) => input.type === "pure" && input.valueType === "address"
+      );
+
+      // Find the amount input
+      const amountInput = inputs.find(
+        (input) => input.type === "pure" && input.valueType === "u64"
+      );
+
+      if (addressInput) {
+        recipient = addressInput.value;
+      }
+
+      if (amountInput) {
+        amount = parseInt(amountInput.value);
+      }
+
+      if (status === "success" && (recipient === "Unknown" || amount === 0)) {
+        // Check events for transfer information
         for (const event of txData.events || []) {
           if (
             event.type?.includes("TransferEvent") ||
             event.type?.includes("::coin::Transfer")
           ) {
-            recipient = event.parsedJson?.recipient || "Unknown";
-            amount = Number(event.parsedJson?.amount || 0);
+            if (recipient === "Unknown") {
+              recipient = event.parsedJson?.recipient || recipient;
+            }
+            if (amount === 0) {
+              amount = Number(event.parsedJson?.amount || 0);
+            }
             break;
           }
         }
 
-        // If no transfer event found, check balance changes
+        // If still no recipient found, check balance changes for different owner
         if (recipient === "Unknown" && txData.balanceChanges?.length) {
           const change = txData.balanceChanges.find(
             (c) => c.owner?.AddressOwner && c.owner.AddressOwner !== sender
           );
           if (change) {
             recipient = change.owner.AddressOwner;
-            amount = Math.abs(Number(change.amount || 0));
+            if (amount === 0) {
+              amount = Math.abs(Number(change.amount || 0));
+            }
             coinType = change.coinType || coinType;
           }
         }
-      } else {
-        // For failed transactions, get intended recipient from transaction inputs
-        const inputs = txData.transaction?.data?.transaction?.inputs || [];
+      }
 
-        // Find the address input 
-        const addressInput = inputs.find(
-          (input) => input.type === "pure" && input.valueType === "address"
+      // If still no amount, try to get it from balance changes
+      if (amount === 0 && txData.balanceChanges?.length) {
+        const gasChange = txData.balanceChanges.find(
+          (change) =>
+            change.owner?.AddressOwner?.toLowerCase() === sender.toLowerCase()
         );
+        if (gasChange) {
+          const totalChange = Math.abs(Number(gasChange.amount || 0));
+          const gasEstimate = 1500000; 
 
-        // Find the amount input
-        const amountInput = inputs.find(
-          (input) => input.type === "pure" && input.valueType === "u64"
-        );
-
-        if (addressInput) {
-          recipient = addressInput.value;
-        }
-
-        if (amountInput) {
-          amount = parseInt(amountInput.value);
-        }
-
-        if (!amount && txData.balanceChanges?.length) {
-          const gasChange = txData.balanceChanges.find(
-            (change) =>
-              change.owner?.AddressOwner?.toLowerCase() === sender.toLowerCase()
-          );
-          if (gasChange) {
-            amount = Math.abs(Number(gasChange.amount || 0));
+          
+          if (totalChange > gasEstimate * 2) {
+            amount = totalChange - gasEstimate;
           }
         }
       }
