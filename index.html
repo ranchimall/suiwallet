@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SUI Wallet</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/sha256.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+    <script src="lib.sui.js"></script>
+    <script src="suiCrypto.js"></script>
+    <script src="suiBlockchainAPI.js"></script>
+    <script src="suiSearchDB.js"></script>
+  </head>
+  <body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h2>Loading SUI Wallet...</h2>
+      </div>
+    </div>
+
+    <!-- Notification Drawer -->
+    <div id="notificationDrawer" class="notification-drawer"></div>
+
+      <header class="header">
+      <div class="header-content">
+        <div id="logo" class="app-brand">
+          <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+            <title>RanchiMall</title>
+            <path
+              d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.80,2.33q-.18.34-.39.69Z"
+            />
+          </svg>
+          <div class="app-name">
+            <div class="app-name__company">RanchiMall</div>
+            <h4 class="app-name__title">Sui Wallet</h4>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <aside id="sidebar" class="sidebar">
+      <ul class="sidebar-menu">
+        <li>
+          <a href="#" class="nav-link active" data-page="generate">
+            <i class="fas fa-plus-circle"></i>
+            <span>Generate</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="send">
+            <i class="fas fa-paper-plane"></i>
+            <span>Send</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="transactions">
+            <i class="fas fa-history"></i>
+            <span>Transactions</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="recover">
+            <i class="fas fa-key"></i>
+            <span>Recover</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <div class="container">
+      <main class="main-content">
+        <!-- Generate Page -->
+        <div id="generatePage" class="page">
+          <div class="page-header">
+            <h2>
+              <i class="fas fa-wallet"></i> Generate Multi-Blockchain Addresses
+            </h2>
+            <p>
+              Generate addresses for SUI, FLO, BTC from a single private key
+            </p>
+          </div>
+
+          <div class="generate-wallet-intro">
+            <div class="intro-icon">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div class="intro-content">
+              <h3>One Key, Multiple Blockchains</h3>
+              <p>
+                Generate a single private key that works across SUI, FLO, BTC
+                networks. This creates a unified experience across multiple
+                blockchains.
+              </p>
+            </div>
+          </div>
+
+          <div class="card generate-actions">
+            <button
+              id="generateBtn"
+              class="btn btn-primary btn-block"
+            >
+              <i class="fas fa-wallet"></i>
+              Generate
+            </button>
+          </div>
+
+          <div id="walletOutput" class="output"></div>
+
+          <div class="wallet-security-notice">
+            <div class="notice-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notice-content">
+              <h4>Security Notice</h4>
+              <p>
+                Your private keys are generated locally and never leave your
+                device. Make sure to backup your keys securely before using.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Send SUI Page -->
+        <div id="sendPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-paper-plane"></i> Send Transaction</h2>
+            <p>Send SUI to another address</p>
+          </div>
+
+          <div class="card">
+            <form id="sendForm">
+              <div class="form-group">
+                <label for="sendPrivateKey">
+                  <i class="fas fa-key"></i> Private Key (SUI/FLO/BTC)
+                </label>
+                <div class="input-with-actions">
+                  <input
+                    type="password"
+                    id="sendPrivateKey"
+                    class="form-input"
+                    placeholder="Enter SUI/FLO/BTC private key"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn password-toggle"
+                    onclick="togglePasswordVisibility('sendPrivateKey')"
+                    title="Show/Hide Password"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('sendPrivateKey')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div
+                id="balanceDisplay"
+                class="balance-info card"
+                style="display: none; margin-bottom: 1.5rem"
+              >
+                <div class="balance-header">
+                  <h3><i class="fas fa-wallet"></i> Sender Balance</h3>
+                </div>
+                <div class="balance-display">
+                  <div class="balance-amount" id="availableBalance">
+                    0 <span class="currency">SUI</span>
+                  </div>
+                </div>
+                <div
+                  class="address-display"
+                  style="display: block; margin-top: 0.5rem"
+                >
+                  <span class="address-label">Address:</span>
+                  <span class="address-value" id="senderAddress">-</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="recipientAddress">
+                  <i class="fas fa-user"></i> To Address
+                </label>
+                <div class="input-with-actions">
+                  <input
+                    type="text"
+                    id="recipientAddress"
+                    class="form-input"
+                    placeholder="Enter recipient address (0x...)"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('recipientAddress')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="sendAmount">
+                  <i class="fas fa-coins"></i> Amount (SUI)
+                </label>
+                <div class="input-with-actions">
+                  <input
+                    type="number"
+                    id="sendAmount"
+                    class="form-input"
+                    placeholder="Enter the amount to send"
+                    min="0.000000001"
+                    step="0.0000000001"
+                    oninvalid="this.setCustomValidity('Value must be greater than or equal to 0.000000001')"
+                    oninput="this.setCustomValidity('')"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('sendAmount')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-paper-plane"></i>
+                Send Transaction
+              </button>
+            </form>
+          </div>
+
+          <div id="sendOutput" class="output"></div>
+        </div>
+
+        <!-- Transactions Page -->
+        <div id="transactionsPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-exchange-alt"></i> SUI Transactions</h2>
+            <p>Check balance and transaction history for any SUI address</p>
+          </div>
+
+          <div class="card">
+            <!-- Search Type Selector -->
+            <div class="search-type-selector">
+              <div class="search-type-label">Search Type</div>
+              <div class="search-type-options">
+                <label
+                  class="radio-button-container active"
+                  id="addressSearchType"
+                >
+                  <input
+                    type="radio"
+                    name="searchType"
+                    value="address"
+                    checked
+                  />
+                  <div class="radio-icon">
+                    <i class="fas fa-wallet"></i>
+                  </div>
+                  <span>SUI Address</span>
+                </label>
+                <label class="radio-button-container" id="hashSearchType">
+                  <input type="radio" name="searchType" value="hash" />
+                  <div class="radio-icon">
+                    <i class="fas fa-fingerprint"></i>
+                  </div>
+                  <span>Transaction Hash</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="searchInput" id="inputLabel"
+                >SUI Address or Private Key</label
+              >
+              <div class="input-with-actions">
+                <input
+                  type="text"
+                  id="searchInput"
+                  class="form-input"
+                  placeholder="Enter SUI address or private key (SUI/FLO/BTC)"
+                />
+                <button
+                  type="button"
+                  class="input-action-btn clear-btn"
+                  onclick="clearInput('searchInput')"
+                  title="Clear"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="form-text" id="inputHelp">
+                Enter a SUI address to view transactions, or use SUI/FLO/BTC
+                private key to derive address
+              </div>
+            </div>
+
+            <button
+              class="btn btn-primary btn-block"
+              onclick="searchTransactions()"
+              id="searchBtn"
+            >
+              <i class="fas fa-search"></i>
+              Search
+            </button>
+          </div>
+
+          <div
+            id="transactionBalance"
+            class="balance-info card"
+            style="display: none"
+          >
+            <div class="balance-header">
+              <h3><i class="fas fa-wallet"></i> Balance</h3>
+            </div>
+            <div class="balance-display">
+              <div class="balance-amount" id="suiBalance">
+                0 <span class="currency">SUI</span>
+              </div>
+            </div>
+            <div
+              class="address-display"
+              id="transactionAddressDisplay"
+              style="display: none"
+            >
+              <span class="address-label">Address:</span>
+              <span class="address-value" id="displayedAddress"></span>
+            </div>
+          </div>
+
+          <div
+            id="transactionFilterSection"
+            class="transaction-section"
+            style="display: none"
+          >
+            <div class="transaction-header">
+              <h3><i class="fas fa-history"></i> Transactions</h3>
+            </div>
+          </div>
+
+          <div id="transactionResults" class="output"></div>
+
+          <div
+            id="paginationSection"
+            class="pagination-section"
+            style="display: none"
+          >
+            <div class="pagination-info">
+              <span id="paginationInfo">Showing 1-10 of 0 transactions</span>
+            </div>
+            <div class="pagination-controls">
+              <button
+                class="pagination-btn"
+                id="prevPageBtn"
+                disabled
+              >
+                <i class="fas fa-chevron-left"></i>
+                <span class="btn-text">Prev</span>
+              </button>
+              <div class="page-numbers" id="pageNumbers"></div>
+              <button class="pagination-btn" id="nextPageBtn">
+                <span class="btn-text">Next</span>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Searched Addresses History -->
+          <div
+            id="searchedAddressesCard"
+            class="card searched-addresses-card"
+            style="display: none"
+          >
+            <div class="searched-addresses-header">
+              <h3><i class="fas fa-history"></i> Recent Addresses</h3>
+              <button
+                onclick="clearAllSearchedAddresses()"
+                class="btn-clear-all"
+                title="Clear all"
+              >
+                <i class="fas fa-trash"></i> Clear All
+              </button>
+            </div>
+            <div class="searched-addresses-list" id="searchedAddressesList">
+              <!-- Searched addresses will be displayed here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recover Page -->
+        <div id="recoverPage" class="page hidden">
+          <div class="page-header">
+            <h2>
+              <i class="fas fa-sync-alt"></i> Recover Multi-Blockchain Addresses
+            </h2>
+            <p>
+              Recover all blockchain addresses (SUI, FLO, BTC) from a single
+              private key
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="form-group">
+              <label for="recoverPrivateKey"
+                ><i class="fas fa-key"></i> Private Key (SUI/FLO/BTC)</label
+              >
+              <div class="input-with-actions">
+                <input
+                  type="password"
+                  id="recoverPrivateKey"
+                  class="form-input"
+                  placeholder="Enter SUI/FLO/BTC private key"
+                  required
+                />
+                <button
+                  type="button"
+                  class="input-action-btn password-toggle"
+                  onclick="togglePasswordVisibility('recoverPrivateKey')"
+                  title="Show/Hide Password"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  type="button"
+                  class="input-action-btn clear-btn"
+                  onclick="clearInput('recoverPrivateKey')"
+                  title="Clear"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="form-text">
+                Only private keys accepted: SUI (suiprivkey1...), BTC/FLO (WIF format) - NO addresses
+              </div>
+            </div>
+
+            <button id="recoverBtn" class="btn btn-primary btn-block">
+              <i class="fas fa-sync-alt"></i>
+              Recover
+            </button>
+
+            <div id="recoverOutput" class="output"></div>
+          </div>
+
+          <div class="wallet-security-notice">
+            <div class="notice-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notice-content">
+              <h4>Privacy Notice</h4>
+              <p>
+                Your private key is processed locally and never transmitted to
+                any server. All recovery operations happen in your browser.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="nav-box">
+      <button class="nav-btn active" data-page="generate">
+        <i class="fas fa-plus-circle"></i>
+        <span>Generate</span>
+      </button>
+      <button class="nav-btn" data-page="send">
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
+      </button>
+      <button class="nav-btn" data-page="transactions">
+        <i class="fas fa-history"></i>
+        <span>Transactions</span>
+      </button>
+      <button class="nav-btn" data-page="recover">
+        <i class="fas fa-key"></i>
+        <span>Recover</span>
+      </button>
+    </nav>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>
+            <i class="fas fa-exclamation-triangle"></i> Confirm Transaction
+          </h3>
+          <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-details">
+            <div class="detail-group">
+              <label><i class="fas fa-wallet"></i> To Address:</label>
+              <div
+                class="confirm-value address-value"
+                id="confirmRecipient"
+              ></div>
+            </div>
+            <div class="detail-group">
+              <label><i class="fas fa-coins"></i> Amount:</label>
+              <div class="confirm-value" id="confirmAmount"></div>
+            </div>
+            <div class="detail-group">
+              <label><i class="fas fa-gas-pump"></i> Estimated Gas:</label>
+              <div class="confirm-value" id="confirmGas">Calculating...</div>
+            </div>
+            <div class="detail-group warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              <p style="margin: 0; color: var(--text-color)">
+                Please verify all details carefully. This transaction cannot be
+                reversed once confirmed.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelTransaction" class="btn btn-secondary">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button id="confirmTransaction" class="btn btn-primary">
+            <i class="fas fa-check"></i> Confirm & Send
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+  <script>
+    let currentWallet = null;
+    let preparedTransaction = null;
+    let currentAddress = null;
+    let currentPage = 1;
+    let searchType = "address";
+    const PAGE_LIMIT = 10;
+    const searchedAddressDB = new SearchedAddressDB();
+
+    // Validation Utilities
+    const validators = {
+      // SUI Address validation
+      isSuiAddress: (address) => {
+        if (!address || typeof address !== 'string') return false;
+        return address.startsWith('0x') && address.length === 66 && /^0x[a-fA-F0-9]{64}$/.test(address);
+      },
+
+      // Transaction hash validation for SUI blockchain
+      isTransactionHash: (hash) => {
+        if (!hash || typeof hash !== 'string') return false;
+        hash = hash.trim();
+        
+        if (hash.startsWith('0x')) {
+          return false;
+        }
+        
+        // SUI transaction hashes are base58 encoded
+        const base58Regex = /^[1-9A-HJ-NP-Za-km-z]+$/;
+        
+        // Check length (SUI transaction hashes are typically 43-44 characters)
+        if (hash.length < 32 || hash.length > 50) {
+          return false;
+        }
+        
+        // Check if it matches base58 format
+        return base58Regex.test(hash);
+      },
+
+      // Private key validation (generic)
+      isPrivateKey: (privateKey) => {
+        if (!privateKey || typeof privateKey !== 'string') return false;
+        // Remove any whitespace
+        privateKey = privateKey.trim();
+        
+        if (/^suiprivkey1[a-zA-Z0-9]+$/.test(privateKey) && privateKey.length > 20) return true;
+        
+        // 64 hex chars (32 bytes) - most common format
+        if (/^[a-fA-F0-9]{64}$/.test(privateKey)) return true;
+        
+        // With 0x prefix
+        if (/^0x[a-fA-F0-9]{64}$/.test(privateKey)) return true;
+        
+        // WIF format (Bitcoin/FLO style) - typically 51-52 chars, starts with specific chars
+        // Bitcoin WIF: starts with 5, K, or L
+        if (/^[5KL][1-9A-HJ-NP-Za-km-z]{50,51}$/.test(privateKey)) return true;
+        
+        // FLO WIF: starts with R or other specific chars
+        if (/^[R][1-9A-HJ-NP-Za-km-z]{50,51}$/.test(privateKey)) return true;
+        
+        // Generic WIF format fallback (51-52 chars)
+        if (privateKey.length >= 51 && privateKey.length <= 52 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(privateKey)) return true;
+        
+        return false;
+      },
+
+      // Amount validation for transactions
+      isValidAmount: (amount) => {
+        if (!amount || amount === '') return false;
+        const num = parseFloat(amount);
+        return !isNaN(num) && num > 0 && num <= 1000000000; // Max 1B SUI
+      },
+
+
+      // Input sanitization
+      sanitizeInput: (input) => {
+        if (typeof input !== 'string') return '';
+        return input.trim().replace(/[<>'"]/g, '');
+      }
+    };
+
+    // Helper function to detect blockchain type from private key format
+    function detectBlockchainFromPrivateKey(privateKey) {
+      const trimmed = privateKey.trim();
+      
+      // SUI private key format: starts with 'suiprivkey1'
+      if (trimmed.startsWith('suiprivkey1')) {
+        return 'SUI';
+      }
+      
+      // Hex format (64 chars) - could be raw private key for any blockchain
+      if (/^[0-9a-fA-F]{64}$/.test(trimmed)) {
+        // For hex format, we'll default to FLO unless we can determine otherwise
+        return 'FLO';
+      }
+      
+      // WIF format - check first character to determine network
+      if (trimmed.length >= 51 && trimmed.length <= 52) {
+        // BTC mainnet WIF starts with 'K' or 'L'
+        if (trimmed.startsWith('K') || trimmed.startsWith('L')) {
+          return 'BTC';
+        }
+        // FLO mainnet WIF starts with 'R'
+        if (trimmed.startsWith('R')) {
+          return 'FLO';
+        }
+      }
+      
+      // Default fallback
+      return 'BTC';
+    }
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await searchedAddressDB.init();
+        initializeTheme();
+        initializeNavigation();
+        initializeEventListeners();
+        hideLoadingScreen();
+        loadSearchedAddresses();
+        await loadAddressFromURL();
+      } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('Application initialization failed. Please refresh the page.', 'error');
+      }
+    });
+
+    function hideLoadingScreen() {
+      setTimeout(() => {
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 500);
+      }, 1000);
+    }
+
+    // Theme Management
+    function initializeTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.querySelector('#themeToggle i');
+      icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+
+    // Navigation
+    function initializeNavigation() {
+      const navLinks = document.querySelectorAll('.nav-link, .nav-btn');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const sidebar = document.getElementById('sidebar');
+
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const page = link.getAttribute('data-page');
+          showPage(page);
+          
+          // Update active states
+          navLinks.forEach(l => l.classList.remove('active'));
+          document.querySelectorAll(`.nav-link[data-page="${page}"], .nav-btn[data-page="${page}"]`)
+            .forEach(l => l.classList.add('active'));
+          
+          // Close sidebar on mobile
+          sidebar.classList.remove('active');
+          sidebarOverlay.classList.remove('active');
+        });
+      });
+
+
+
+      sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+      });
+    }
+
+    function showPage(pageId) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.add('hidden');
+      });
+      
+      // Show selected page
+      document.getElementById(pageId + 'Page').classList.remove('hidden');
+    }
+
+    let eventListenersInitialized = false;
+    
+    function initializeEventListeners() {
+      if (eventListenersInitialized) return; // Prevent duplicate initialization
+      eventListenersInitialized = true;
+      
+      // Generate wallet
+      document.getElementById('generateBtn').addEventListener('click', generateWallet);
+
+      // Send form
+      document.getElementById('sendForm').addEventListener('submit', handleSendSubmission);
+      document.getElementById('sendPrivateKey').addEventListener('input', fetchBalance);
+
+      // Clear previous transaction results when user starts entering new details
+      document.getElementById('sendPrivateKey').addEventListener('input', clearPreviousSendResults);
+      document.getElementById('recipientAddress').addEventListener('input', clearPreviousSendResults);
+      document.getElementById('sendAmount').addEventListener('input', clearPreviousSendResults);
+
+      // Transaction search
+      document.getElementById('searchBtn').addEventListener('click', searchTransactions);
+      document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchTransactions();
+      });
+      
+      // Clear previous search results when user starts typing new search
+      document.getElementById('searchInput').addEventListener('input', clearPreviousSearchResults);
+
+      // Search type radio buttons
+      document.querySelectorAll('input[name="searchType"]').forEach(radio => {
+        radio.addEventListener('change', updateSearchType);
+      });
+
+      // Initialize search interface
+      updateSearchType();
+
+
+      // Recover wallet
+      document.getElementById('recoverBtn').addEventListener('click', recoverWallet);
+      
+      // Clear previous recover results when user starts typing
+      document.getElementById('recoverPrivateKey').addEventListener('input', clearPreviousRecoverResults);
+
+      // Modal handlers
+      document.querySelector('.modal-close').addEventListener('click', closeModal);
+      document.getElementById('cancelTransaction').addEventListener('click', closeModal);
+      document.getElementById('confirmTransaction').addEventListener('click', confirmTransaction);
+
+    }
+
+    // Wallet Generation
+    async function generateWallet() {
+      const outputDiv = document.getElementById('walletOutput');
+      const generateBtn = document.getElementById('generateBtn');
+      
+      
+      if (generateBtn.disabled) {
+        return;
+      }
+      
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      
+      outputDiv.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Generating wallet...</div>';
+
+      try {
+        const wallet = await suiCrypto.generateMultiChain();
+        
+        if (!wallet || !wallet.SUI) {
+          throw new Error('Failed to generate wallet - please try again');
+        }
+
+        currentWallet = wallet;
+
+        const html = `
+          <div class="wallet-generated-success">
+            <div class="success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="success-message">
+              <h3>Wallet Generated Successfully!</h3>
+              <p>Your multi-chain wallet has been created. Keep your private key safe!</p>
+            </div>
+          </div>
+          
+          <div class="blockchain-section">
+            <div class="blockchain-header">
+              <h4><i class="fas fa-coins"></i> SUI</h4>
+              <span class="blockchain-badge primary">Primary</span>
+            </div>
+            <div class="detail-row">
+              <label>Address:</label>
+              <div class="value-container">
+                <code>${wallet.SUI.address}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.SUI.address}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="detail-row">
+              <label>Private Key:</label>
+              <div class="value-container">
+                <code>${wallet.SUI.privateKey}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.SUI.privateKey}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="blockchain-section">
+            <div class="blockchain-header">
+              <h4><i class="fab fa-bitcoin"></i> Bitcoin</h4>
+              <span class="blockchain-badge secondary">Secondary</span>
+            </div>
+            <div class="detail-row">
+              <label>Address:</label>
+              <div class="value-container">
+                <code>${wallet.BTC.address}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.BTC.address}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="detail-row">
+              <label>Private Key:</label>
+              <div class="value-container">
+                <code>${wallet.BTC.privateKey}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.BTC.privateKey}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="blockchain-section">
+            <div class="blockchain-header">
+              <h4><i class="fas fa-leaf"></i> FLO</h4>
+              <span class="blockchain-badge secondary">Secondary</span>
+            </div>
+            <div class="detail-row">
+              <label>Address:</label>
+              <div class="value-container">
+                <code>${wallet.FLO.address}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.FLO.address}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="detail-row">
+              <label>Private Key:</label>
+              <div class="value-container">
+                <code>${wallet.FLO.privateKey}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.FLO.privateKey}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        outputDiv.innerHTML = html;
+        showNotification('Wallet generated successfully!', 'success');
+      } catch (error) {
+        console.error('Error generating wallet:', error);
+        
+        showNotification('Failed to generate wallet', 'error');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-wallet"></i> Generate';
+      }
+    }
+
+    // Balance Fetching with debouncing
+    let fetchBalanceTimeout;
+    
+    async function fetchBalance() {
+      // Clear previous timeout
+      if (fetchBalanceTimeout) {
+        clearTimeout(fetchBalanceTimeout);
+      }
+      
+      // Debounce the actual balance fetching
+      fetchBalanceTimeout = setTimeout(async () => {
+        await performBalanceFetch();
+      }, 500); 
+    }
+    
+    async function performBalanceFetch() {
+      const privateKeyInput = document.getElementById('sendPrivateKey');
+      const privateKey = privateKeyInput.value.trim();
+      const balanceDisplay = document.getElementById('balanceDisplay');
+      const balanceAmount = document.getElementById('availableBalance');
+
+      if (!privateKey) {
+        balanceDisplay.style.display = 'none';
+        return;
+      }
+
+      if (privateKey.startsWith('0x')) {
+        balanceDisplay.style.display = 'none';
+        privateKeyInput.classList.add('error');
+        showNotification('Please enter a private key.', 'error');
+        return;
+      }
+
+      // Validate private key format
+      if (!validators.isPrivateKey(privateKey)) {
+        balanceDisplay.style.display = 'none';
+        privateKeyInput.classList.add('error');
+        showNotification('Invalid private key format', 'error');
+        return;
+      }
+
+      privateKeyInput.classList.remove('error');
+
+      try {
+        const wallet = await suiCrypto.generateMultiChain(privateKey);
+        
+        // Validate generated wallet
+        if (!wallet || !wallet.SUI || !validators.isSuiAddress(wallet.SUI.address)) {
+          throw new Error('Invalid wallet generated from private key');
+        }
+
+        const balance = await suiBlockchainAPI.getBalance(wallet.SUI.address, '0x2::sui::SUI');
+        
+        // Validate balance response
+        if (balance === null || balance === undefined) {
+          throw new Error('Failed to fetch balance from network');
+        }
+
+        const suiBalance = (Number(balance) / 1e9).toFixed(6);
+        
+        // Validate balance is a valid number
+        if (isNaN(suiBalance)) {
+          throw new Error('Invalid balance received from network');
+        }
+        
+        balanceAmount.innerHTML = `${suiBalance} <span class="currency">SUI</span>`;
+        document.getElementById('senderAddress').textContent = wallet.SUI.address;
+        balanceDisplay.style.display = 'block';
+        
+        currentWallet = wallet;
+      } catch (error) {
+        console.error('Error fetching balance:', error);
+        balanceDisplay.style.display = 'none';
+        privateKeyInput.classList.add('error');
+        
+        let errorMessage = 'Error fetching balance';
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.message.includes('Invalid')) {
+          errorMessage = error.message;
+        }
+        
+        showNotification(errorMessage, 'error');
+      }
+    }
+
+    // Send Transaction
+    async function handleSendSubmission(e) {
+      e.preventDefault();
+      
+      const privateKeyInput = document.getElementById('sendPrivateKey');
+      const recipientInput = document.getElementById('recipientAddress');
+      const amountInput = document.getElementById('sendAmount');
+      
+      const privateKey = validators.sanitizeInput(privateKeyInput.value.trim());
+      const recipientAddress = validators.sanitizeInput(recipientInput.value.trim());
+      const amount = validators.sanitizeInput(amountInput.value.trim());
+      
+      const submitButton = e.target.querySelector('button[type="submit"]');
+      const originalButtonText = submitButton.innerHTML;
+
+      [privateKeyInput, recipientInput, amountInput].forEach(input => {
+        input.classList.remove('error');
+      });
+
+      let hasErrors = false;
+      const errors = [];
+
+
+      // Validate all fields are filled
+      if (!privateKey) {
+        privateKeyInput.classList.add('error');
+        errors.push('Private key is required');
+        hasErrors = true;
+      }
+
+      if (!recipientAddress) {
+        recipientInput.classList.add('error');
+        errors.push('Recipient address is required');
+        hasErrors = true;
+      }
+
+      if (!amount) {
+        amountInput.classList.add('error');
+        errors.push('Amount is required');
+        hasErrors = true;
+      }
+
+      
+      if (privateKey && privateKey.startsWith('0x')) {
+        privateKeyInput.classList.add('error');
+        errors.push('Please enter a private key.');
+        hasErrors = true;
+      }
+
+      // Validate private key format
+      if (privateKey && !privateKey.startsWith('0x') && !validators.isPrivateKey(privateKey)) {
+        privateKeyInput.classList.add('error');
+        errors.push('Invalid private key format');
+        hasErrors = true;
+      }
+
+      // Validate recipient address format
+      if (recipientAddress && !validators.isSuiAddress(recipientAddress)) {
+        recipientInput.classList.add('error');
+        errors.push('Invalid SUI address format (must start with 0x and be 66 characters)');
+        hasErrors = true;
+      }
+
+      // Validate amount
+      if (amount && !validators.isValidAmount(amount)) {
+        amountInput.classList.add('error');
+        if (isNaN(parseFloat(amount))) {
+          errors.push('Amount must be a valid number');
+        } else if (parseFloat(amount) <= 0) {
+          errors.push('Amount must be greater than 0');
+        } else if (parseFloat(amount) > 1000000000) {
+          errors.push('Amount is too large (max 1B SUI)');
+        }
+        hasErrors = true;
+      }
+
+      
+      if (privateKey && recipientAddress && validators.isPrivateKey(privateKey) && validators.isSuiAddress(recipientAddress)) {
+        try {
+          const wallet = await suiCrypto.generateMultiChain(privateKey);
+          if (wallet.SUI.address.toLowerCase() === recipientAddress.toLowerCase()) {
+            recipientInput.classList.add('error');
+            errors.push('Cannot send to the same address');
+            hasErrors = true;
+          }
+        } catch (error) {
+          console.error('Error validating addresses:', error);
+        }
+      }
+
+      if (hasErrors) {
+        showNotification(errors.join('. '), 'error');
+        return;
+      }
+
+      if (currentWallet) {
+        try {
+          const currentBalance = parseFloat(document.getElementById('availableBalance').textContent.split(' ')[0]);
+          const sendAmount = parseFloat(amount);
+          
+          if (sendAmount > currentBalance) {
+            amountInput.classList.add('error');
+            showNotification('Insufficient balance for this transaction', 'error');
+            return;
+          }
+
+        
+        } catch (error) {
+          console.error('Error checking balance:', error);
+        }
+      }
+
+      document.getElementById('sendOutput').innerHTML = '';
+
+      // Show loading state
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing Transaction...';
+
+      try {
+        preparedTransaction = await suiBlockchainAPI.prepareSuiTransaction(
+          privateKey,
+          recipientAddress,
+          amount
+        );
+
+        // Show confirmation modal
+        document.getElementById('confirmRecipient').textContent = recipientAddress;
+        document.getElementById('confirmAmount').textContent = `${amount} SUI`;
+        
+        // Display actual calculated gas fee
+        const gasFeeInSui = (preparedTransaction.gasFee / 1e9).toFixed(6);
+        document.getElementById('confirmGas').textContent = `${gasFeeInSui} SUI`;
+        
+        document.getElementById('confirmModal').style.display = 'block';
+        
+      } catch (error) {
+        console.error('Error preparing transaction:', error);
+        showNotification(`Transaction preparation failed: ${error.message}`, 'error');
+      } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+      }
+    }
+
+    async function confirmTransaction() {
+      if (!preparedTransaction) {
+        showNotification('No transaction prepared', 'error');
+        return;
+      }
+
+      const confirmButton = document.getElementById('confirmTransaction');
+      const originalButtonText = confirmButton.innerHTML;
+      
+      try {
+        // Refresh balance before final check
+        if (currentWallet && currentWallet.SUI) {
+          try {
+            const latestBalance = await suiBlockchainAPI.getBalance(currentWallet.SUI.address, '0x2::sui::SUI');
+            const latestSuiBalance = (Number(latestBalance) / 1e9).toFixed(6);
+            document.getElementById('availableBalance').innerHTML = `${latestSuiBalance} <span class="currency">SUI</span>`;
+          } catch (error) {
+            console.warn('Could not refresh balance:', error);
+          }
+        }
+
+        // Final balance validation before sending
+        const currentBalance = parseFloat(document.getElementById('availableBalance').textContent.split(' ')[0]);
+        const sendAmount = parseFloat(document.getElementById('confirmAmount').textContent.split(' ')[0]);
+        const estimatedGasFee = preparedTransaction.gasFee / 1e9; // Convert from MIST to SUI
+        const totalRequired = sendAmount + estimatedGasFee;
+
+        if (totalRequired > currentBalance) {
+          const shortfall = (totalRequired - currentBalance).toFixed(6);
+          
+          // Display error in sendOutput
+          const output = document.getElementById('sendOutput');
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Insufficient Balance</h3>
+                <p>You don't have enough SUI to complete this transaction.</p>
+                <div class="error-help">
+                  <p><strong>Transaction Breakdown:</strong></p>
+                  <ul>
+                    <li>Amount to send: ${sendAmount} SUI</li>
+                    <li>Estimated gas fee: ${estimatedGasFee.toFixed(6)} SUI</li>
+                    <li>Total required: ${totalRequired.toFixed(6)} SUI</li>
+                    <li>Current balance: ${currentBalance} SUI</li>
+                    <li>Shortfall: ${shortfall} SUI</li>
+                  </ul>
+                  <p>Please reduce the amount or add more SUI to your wallet.</p>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          showNotification(`Insufficient balance. Need ${shortfall} more SUI.`, 'error');
+          closeModal();
+          return;
+        }
+
+        // Show loading state
+        confirmButton.disabled = true;
+        confirmButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+        const result = await suiBlockchainAPI.signAndSendSuiTransaction(preparedTransaction);
+        
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+
+        const digest = result.result?.digest;
+        if (digest) {
+          // Get transaction details from the confirmation modal
+          const recipientAddress = document.getElementById('confirmRecipient').textContent;
+          const amount = document.getElementById('confirmAmount').textContent;
+          const gasUsed = document.getElementById('confirmGas').textContent;
+
+          // Display success message in sendOutput
+          const output = document.getElementById('sendOutput');
+          output.innerHTML = `
+            <div class="wallet-generated-success">
+              <div class="success-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="success-message">
+                <h3>Transaction Confirmed!</h3>
+                <p>Your transaction has been confirmed on the SUI blockchain.</p>
+              </div>
+            </div>
+            
+            <div class="blockchain-section">
+              <div class="blockchain-header">
+                <h4><i class="fas fa-receipt"></i> Transaction Details</h4>
+                <span class="blockchain-badge primary">Confirmed</span>
+              </div>
+              
+              <div class="detail-row">
+                <label><i class="fas fa-fingerprint"></i> Transaction Hash</label>
+                <div class="value-container">
+                  <code>${digest}</code>
+                  <button class="btn-icon" onclick="copyToClipboard('${digest}')" title="Copy hash">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <label><i class="fas fa-coins"></i> Amount</label>
+                <div class="value-container">
+                  <code>${amount}</code>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <label><i class="fas fa-paper-plane"></i> From</label>
+                <div class="value-container">
+                  <code>${preparedTransaction.senderAddress}</code>
+                  <button class="btn-icon" onclick="copyToClipboard('${preparedTransaction.senderAddress}')" title="Copy address">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <label><i class="fas fa-arrow-right"></i> To</label>
+                <div class="value-container">
+                  <code>${recipientAddress}</code>
+                  <button class="btn-icon" onclick="copyToClipboard('${recipientAddress}')" title="Copy address">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="detail-row">
+                <label><i class="fas fa-gas-pump"></i> Gas Used</label>
+                <div class="value-container">
+                  <code>${gasUsed}</code>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <label><i class="fas fa-external-link-alt"></i> Explorer</label>
+                <div class="value-container">
+                  <a href="https://www.oklink.com/sui/tx/${digest}" target="_blank" style="color: var(--primary-color); text-decoration: underline;">
+                    View on SUI Explorer
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+
+          showNotification('Transaction confirmed successfully!', 'success');
+          
+          document.getElementById('sendForm').reset();
+          document.getElementById('balanceDisplay').style.display = 'none';
+          
+          closeModal();
+        } else {
+          throw new Error('Transaction failed - no digest returned');
+        }
+      } catch (error) {
+        console.error('Error sending transaction:', error);
+        
+        let errorTitle = 'Transaction Failed';
+        let errorMessage = error.message;
+        let isInsufficientBalance = false;
+        
+        // Check for insufficient balance errors
+        if (error.message.toLowerCase().includes('insufficient') || 
+            error.message.toLowerCase().includes('balance') ||
+            error.message.toLowerCase().includes('funds') ||
+            error.message.toLowerCase().includes('gas')) {
+          errorTitle = 'Insufficient Balance';
+          isInsufficientBalance = true;
+          
+          // Try to get current balance for detailed error
+          let currentBalance = 0;
+          try {
+            const balanceText = document.getElementById('availableBalance').textContent;
+            currentBalance = parseFloat(balanceText.split(' ')[0]) || 0;
+          } catch (e) {
+            console.warn('Could not parse balance:', e);
+          }
+          
+          const sendAmount = parseFloat(document.getElementById('confirmAmount').textContent.split(' ')[0]) || 0;
+          const estimatedGas = preparedTransaction.gasFee ? (preparedTransaction.gasFee / 1e9) : 0.001;
+          
+          errorMessage = `You don't have enough SUI to complete this transaction. Current balance: ${currentBalance} SUI, Required: ${(sendAmount + estimatedGas).toFixed(6)} SUI`;
+        }
+        
+        // Display error message in sendOutput
+        const output = document.getElementById('sendOutput');
+        output.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="error-message">
+              <h3>${errorTitle}</h3>
+              <p>${validators.sanitizeInput(errorMessage)}</p>
+              ${isInsufficientBalance ? `
+                <div class="error-help">
+                  <p><strong>Solutions:</strong></p>
+                  <ul>
+                    <li>Reduce the amount you're sending</li>
+                    <li>Add more SUI to your wallet</li>
+                    <li>Wait for pending transactions to complete</li>
+                  </ul>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+        
+        showNotification(`${errorTitle}: ${errorMessage}`, 'error');
+        closeModal();
+      } finally {
+        // Restore button state
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = originalButtonText;
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('confirmModal').style.display = 'none';
+      preparedTransaction = null;
+    }
+
+    // URL Handling Functions
+    function getAddressFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get("address");
+    }
+
+    function getHashFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get("hash");
+    }
+
+    function updateURLWithAddress(address) {
+      if (!address) return;
+      
+      const url = new URL(window.location);
+      url.searchParams.delete("hash");
+      url.searchParams.set("address", address);
+      window.history.pushState({ address: address }, "", url);
+    }
+
+    function updateURLWithHash(hash) {
+      if (!hash) return;
+      
+      const url = new URL(window.location);
+      url.searchParams.delete("address");
+      url.searchParams.set("hash", hash);
+      window.history.pushState({ hash: hash }, "", url);
+    }
+
+    // Load address or hash from URL on page load
+    async function loadAddressFromURL() {
+      const address = getAddressFromURL();
+      const hash = getHashFromURL();
+
+      if (hash) {
+        // If hash parameter exists, load transaction hash
+        showPage("transactions");
+        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        const hashRadio = document.querySelector('input[name="searchType"][value="hash"]');
+        if (hashRadio) {
+          hashRadio.checked = true;
+          document.querySelectorAll('.radio-button-container').forEach(c => c.classList.remove('active'));
+          hashRadio.closest('.radio-button-container').classList.add('active');
+          updateSearchType();
+        }
+        
+        document.getElementById("searchInput").value = hash;
+        await searchTransactions();
+        
+      } else if (address) {
+        // If address parameter exists, load address
+        showPage("transactions");
+        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        const addressRadio = document.querySelector('input[name="searchType"][value="address"]');
+        if (addressRadio) {
+          addressRadio.checked = true;
+          document.querySelectorAll('.radio-button-container').forEach(c => c.classList.remove('active'));
+          addressRadio.closest('.radio-button-container').classList.add('active');
+          updateSearchType();
+        }
+        
+        document.getElementById("searchInput").value = address;
+        await searchTransactions();
+      }
+    }
+
+    
+    window.addEventListener("popstate", async function (event) {
+      if (event.state && event.state.hash) {
+        showPage("transactions");
+        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        const hashRadio = document.querySelector('input[name="searchType"][value="hash"]');
+        if (hashRadio) {
+          hashRadio.checked = true;
+          document.querySelectorAll('.radio-button-container').forEach(c => c.classList.remove('active'));
+          hashRadio.closest('.radio-button-container').classList.add('active');
+          updateSearchType();
+        }
+        
+        document.getElementById("searchInput").value = event.state.hash;
+        await searchTransactions();
+        
+      } else if (event.state && event.state.address) {
+        showPage("transactions");
+        
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        
+        const addressRadio = document.querySelector('input[name="searchType"][value="address"]');
+        if (addressRadio) {
+          addressRadio.checked = true;
+          document.querySelectorAll('.radio-button-container').forEach(c => c.classList.remove('active'));
+          addressRadio.closest('.radio-button-container').classList.add('active');
+          updateSearchType();
+        }
+        
+        document.getElementById("searchInput").value = event.state.address;
+        await searchTransactions();
+      }
+    });
+
+    // Transaction Search
+    function updateSearchType() {
+      const selectedType = document.querySelector('input[name="searchType"]:checked').value;
+      searchType = selectedType;
+      
+      document.querySelectorAll('.radio-button-container').forEach(container => {
+        container.classList.remove('active');
+      });
+      document.querySelector(`input[value="${selectedType}"]`).closest('.radio-button-container').classList.add('active');
+      
+      const searchInput = document.getElementById('searchInput');
+      const inputLabel = document.getElementById('inputLabel');
+      const inputHelp = document.getElementById('inputHelp');
+      
+      clearSearchResults();
+      
+      searchInput.value = '';
+      
+      if (selectedType === 'address') {
+        inputLabel.textContent = 'SUI Address or Private Key';
+        searchInput.placeholder = 'Enter SUI address or private key (SUI/FLO/BTC)';
+        inputHelp.textContent = 'Enter a SUI address to view transactions, or use SUI/FLO/BTC private key to derive address';
+        document.getElementById('searchBtn').innerHTML = '<i class="fas fa-search"></i> Search';
+        
+        // Show recent addresses for address search
+        loadSearchedAddresses();
+      } else if (selectedType === 'hash') {
+        inputLabel.innerHTML = '<i class="fas fa-fingerprint"></i> Transaction Hash';
+        searchInput.placeholder = 'Enter SUI transaction hash';
+        inputHelp.textContent = 'Enter a SUI transaction hash (base58 format, 43-44 characters) to view transaction details';
+        document.getElementById('searchBtn').innerHTML = '<i class="fas fa-fingerprint"></i> Lookup Hash';
+        
+        loadSearchedAddresses();
+      }
+    }
+
+    function clearSearchResults() {
+      
+      const balanceDiv = document.getElementById('transactionBalance');
+      balanceDiv.style.display = 'none';
+
+      const output = document.getElementById('transactionResults');
+      output.innerHTML = '';
+
+      const filterSection = document.getElementById('transactionFilterSection');
+      filterSection.style.display = 'none';
+
+      const paginationSection = document.getElementById('paginationSection');
+      paginationSection.style.display = 'none';
+
+      currentAddress = '';
+      currentPage = 1;
+      
+    }
+
+    // Transaction history variables 
+    currentAddress = "";
+    currentPage = 1;
+    let cache = {};
+
+    async function searchTransactions() {
+      const searchInput = document.getElementById('searchInput');
+      const searchValue = validators.sanitizeInput(searchInput.value.trim());
+      const balanceDiv = document.getElementById('transactionBalance');
+      const button = document.getElementById('searchBtn');
+      const originalHTML = button.innerHTML;
+
+      searchInput.classList.remove('error');
+
+      if (!searchValue) {
+        searchInput.classList.add('error');
+        showNotification('Please enter a search value', 'error');
+        return;
+      }
+
+
+      // Validate input based on search type
+      if (searchType === 'hash') {
+        if (!validators.isTransactionHash(searchValue)) {
+          searchInput.classList.add('error');
+          if (searchValue.startsWith('0x')) {
+            showNotification('SUI transaction hashes do NOT start with 0x. Please enter a valid base58 hash.', 'error');
+          } else {
+            showNotification('Invalid SUI transaction hash format.', 'error');
+          }
+          return;
+        }
+      } else if (searchType === 'address') {
+        // Check if it's a valid SUI address OR a valid private key
+        const isValidAddress = validators.isSuiAddress(searchValue);
+        const isValidPrivateKey = !searchValue.startsWith('0x') && validators.isPrivateKey(searchValue);
+        
+        if (!isValidAddress && !isValidPrivateKey) {
+          searchInput.classList.add('error');
+          if (searchValue.startsWith('0x') && searchValue.length !== 66) {
+            showNotification('Invalid SUI address format (must be exactly 66 characters)', 'error');
+          } else if (searchValue.startsWith('0x')) {
+          } else {
+            showNotification('Invalid input. Please enter a valid SUI address (0x...) or a valid private key (SUI/FLO/BTC)', 'error');
+          }
+          return;
+        }
+      }
+      if (button.disabled) {
+        return;
+      }
+
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+      try {
+        if (searchType === 'hash') {
+          // Handle transaction hash search
+          await searchTransactionByHash(searchValue, button, originalHTML);
+          return; 
+        }
+
+        // Handle address search
+        let address;
+
+        // Check if input is a valid SUI address
+        if (searchValue.startsWith('0x') && searchValue.length === 66) {
+          address = searchValue;
+        }
+        // Check if input is a valid private key (SUI, FLO, or BTC)
+        else {
+          try {
+            const wallet = await suiCrypto.generateMultiChain(searchValue);
+            address = wallet.SUI.address;
+          } catch (error) {
+            showNotification('Invalid input. Please enter a valid SUI address or a valid SUI/FLO/BTC private key.', 'error');
+            button.disabled = false;
+            button.innerHTML = originalHTML;
+            return;
+          }
+        }
+
+        currentAddress = address;
+        currentPage = 1;
+
+        // Get balance and display
+        const balance = await suiBlockchainAPI.getBalance(address, '0x2::sui::SUI');
+        const suiBalance = (Number(balance) / 1e9).toFixed(6);
+
+        balanceDiv.style.display = 'block';
+        document.getElementById('suiBalance').innerHTML = `${suiBalance} <span class="currency">SUI</span>`;
+        document.getElementById('transactionAddressDisplay').style.display = 'block';
+        document.getElementById('displayedAddress').textContent = address;
+
+        // Save searched address to database with source info
+        try {
+          let sourceInfo = null;
+          
+          // If input was a private key, save source info
+          if (!searchValue.startsWith('0x')) {
+            try {
+              const wallet = await suiCrypto.generateMultiChain(searchValue);
+              
+              // Detect blockchain type based on private key format
+              let blockchain = detectBlockchainFromPrivateKey(searchValue);
+              
+              // Only create sourceInfo if it's not a SUI private key
+              if (blockchain !== 'SUI') {
+                sourceInfo = {
+                  originalPrivateKey: searchValue,
+                  blockchain: blockchain,
+                  originalAddress: wallet[blockchain]?.address || address
+                };
+              }
+            } catch (error) {
+              console.log('Could not determine source info:', error);
+            }
+          }
+          
+          await searchedAddressDB.saveSearchedAddress(address, suiBalance, Date.now(), sourceInfo);
+          loadSearchedAddresses();
+        } catch (error) {
+          console.error('Error saving address:', error);
+        }
+
+        document.getElementById('transactionFilterSection').style.display = 'block';
+
+        await loadTransactionsPage(currentPage);
+        updateURLWithAddress(address);
+        
+        showNotification('Loaded successfully!', 'success');
+
+      } catch (error) {
+        console.error('Error in search:', error);
+        showNotification('Search failed: ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalHTML;
+      }
+    }
+
+    // Load transactions 
+    async function loadTransactionsPage(page, cursor = null) {
+      const resultsDiv = document.getElementById('transactionResults');
+      const paginationSection = document.getElementById('paginationSection');
+      
+      resultsDiv.innerHTML = '<div class="transaction-loading"><div class="loading-container"><div class="loading-spinner"><i class="fas"></i></div><div class="loading-text">Loading transactions...</div></div></div>';
+
+      let useCursor = cursor;
+      if (page > 1 && cache[page - 1]) {
+        useCursor = cache[page - 1].nextCursor;
+      }
+
+      try {
+        
+        const result = await suiBlockchainAPI.getTransactionHistory(currentAddress, useCursor, 10);
+        const hasNextPage = result.hasNextPage;
+        const nextCursor = result.nextCursor;
+
+        // Store in cache
+        cache[page] = { details: result.txs, hasNextPage, nextCursor };
+
+        // Render transactions
+        renderTransactionPage(cache[page]);
+
+        // Update pagination
+        updateTransactionPagination(page, hasNextPage);
+
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+        resultsDiv.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="error-message">
+              <h3>Error Loading Transactions</h3>
+              <p>${error.message}</p>
+            </div>
+          </div>
+        `;
+        showNotification('Error loading transactions', 'error');
+      }
+    }
+
+    // Render transactions for a page 
+    function renderTransactionPage(pageData) {
+      const resultsDiv = document.getElementById('transactionResults');
+      
+      if (!pageData || !pageData.details.length) {
+        resultsDiv.innerHTML = `
+          <div class="empty-state" style="text-align: center; padding: 2rem;">
+            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+            <p>No transactions found</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort by timestamp descending (newest first)
+      const sortedTransactions = [...pageData.details].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+      const transactionsList = sortedTransactions.map(tx => {
+        const statusClass = tx.rawStatus === 'success' ? 'confirmed' : 
+                           tx.rawStatus === 'failure' ? 'failed' : 'pending';
+        
+        return `
+        <div class="transaction-card ${tx.direction.toLowerCase()} ${statusClass}">
+          <div class="tx-header">
+            <div class="tx-top-row">
+              <div class="tx-left">
+                <div class="tx-icon">
+                  <i class="fas fa-${tx.direction === 'Sent' ? 'arrow-up' : 'arrow-down'}"></i>
+                </div>
+                <div class="tx-main-info">
+                  <div class="tx-direction-label">${tx.direction}</div>
+                  <div class="tx-amount ${tx.direction.toLowerCase()}">${tx.direction === 'Sent' ? '-' : '+'}${tx.amountSui} SUI</div>
+                </div>
+              </div>
+              <div class="tx-meta">
+                <div class="tx-date">${tx.datetime}</div>
+                <div class="tx-status ${statusClass}">
+                  <i class="fas fa-${statusClass === 'confirmed' ? 'check-circle' : statusClass === 'failed' ? 'times-circle' : 'clock'}"></i>
+                  ${tx.status}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tx-details compact">
+            <div class="tx-detail-row">
+              <span class="tx-label">Hash:</span>
+              <span class="tx-value tx-hash" onclick="window.open('https://www.oklink.com/sui/tx/${tx.digest}', '_blank')">${tx.digest.slice(0, 8)}...</span>
+            </div>
+            <div class="tx-detail-row">
+              <span class="tx-label">From:</span>
+              <span class="tx-value full-address">${tx.from.slice(0, 6)}...${tx.from.slice(-4)}</span>
+            </div>
+            <div class="tx-detail-row">
+              <span class="tx-label">To:</span>
+              <span class="tx-value full-address">${tx.to !== 'Unknown' ? tx.to.slice(0, 6) + '...' + tx.to.slice(-4) : 'Unknown'}</span>
+            </div>
+            ${tx.errorMessage ? `
+            <div class="tx-detail-row error">
+              <span class="tx-label">Error:</span>
+              <span class="tx-value error-message">${tx.errorMessage}</span>
+            </div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      resultsDiv.innerHTML = transactionsList;
+    }
+
+    
+    function updateTransactionPagination(page, hasNextPage) {
+      const paginationSection = document.getElementById('paginationSection');
+      const paginationInfo = document.getElementById('paginationInfo');
+      const prevBtn = document.getElementById('prevPageBtn');
+      const nextBtn = document.getElementById('nextPageBtn');
+
+      paginationSection.style.display = 'flex';
+      
+      const startItem = (page - 1) * 10 + 1;
+      const endItem = page * 10;
+      paginationInfo.textContent = `Showing ${startItem}-${endItem} transactions (Page ${page})`;
+      
+      prevBtn.disabled = page === 1;
+      nextBtn.disabled = !hasNextPage;
+
+      // Update click handlers
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          if (cache[currentPage]) {
+            renderTransactionPage(cache[currentPage]);
+            updateTransactionPagination(currentPage, cache[currentPage].hasNextPage);
+          } else {
+            loadTransactionsPage(currentPage);
+          }
+        }
+      };
+
+      nextBtn.onclick = () => {
+        if (hasNextPage) {
+          currentPage++;
+          if (cache[currentPage]) {
+            renderTransactionPage(cache[currentPage]);
+            updateTransactionPagination(currentPage, cache[currentPage].hasNextPage);
+          } else {
+            loadTransactionsPage(currentPage);
+          }
+        }
+      };
+    }
+
+    async function searchTransactionByHash(transactionHash, button = null, originalHTML = null) {
+      const resultsDiv = document.getElementById('transactionResults');
+      resultsDiv.innerHTML = '<div class="transaction-loading"><div class="loading-container"><div class="loading-spinner"><i class="fas"></i></div><div class="loading-text">Loading transaction details...</div></div></div>';
+
+      try {
+        const txDetails = await suiBlockchainAPI.getTransactionDetails(transactionHash);
+        
+        // Display single transaction details
+        const statusClass = txDetails.rawStatus === 'success' ? 'confirmed' : 
+                           txDetails.rawStatus === 'failure' ? 'failed' : 'pending';
+        
+        const transactionCard = `
+          <div class="transaction-card single-transaction ${statusClass}">
+            <div class="tx-header">
+              <div class="tx-top-row">
+                <div class="tx-left">
+                  <div class="tx-icon">
+                    <i class="fas fa-receipt"></i>
+                  </div>
+                  <div class="tx-main-info">
+                    <div class="tx-direction-label">Transaction Details</div>
+                    <div class="tx-amount">${txDetails.amount} SUI</div>
+                  </div>
+                </div>
+                <div class="tx-meta">
+                  <div class="tx-date">${txDetails.timestamp}</div>
+                  <div class="tx-status ${statusClass}">
+                    <i class="fas fa-${statusClass === 'confirmed' ? 'check-circle' : statusClass === 'failed' ? 'times-circle' : 'clock'}"></i>
+                    ${txDetails.status}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tx-details expanded">
+              <div class="tx-detail-row">
+                <span class="tx-label">Transaction Hash:</span>
+                <span class="tx-value tx-hash" onclick="window.open('https://www.oklink.com/sui/tx/${txDetails.digest}', '_blank')">${txDetails.digest}</span>
+              </div>
+              <div class="tx-detail-row">
+                <span class="tx-label">From:</span>
+                <span class="tx-value full-address" onclick="copyToClipboard('${txDetails.sender}')">${txDetails.sender}</span>
+              </div>
+              <div class="tx-detail-row">
+                <span class="tx-label">To:</span>
+                <span class="tx-value full-address" onclick="copyToClipboard('${txDetails.recipient}')">${txDetails.recipient}</span>
+              </div>
+              <div class="tx-detail-row">
+                <span class="tx-label">Amount:</span>
+                <span class="tx-value">${txDetails.amount} SUI</span>
+              </div>
+              <div class="tx-detail-row">
+                <span class="tx-label">Gas Used:</span>
+                <span class="tx-value">${txDetails.gasUsed} SUI</span>
+              </div>
+              <div class="tx-detail-row">
+                <span class="tx-label">Status:</span>
+                <span class="tx-value tx-status ${statusClass}">
+                  <i class="fas fa-${statusClass === 'confirmed' ? 'check-circle' : statusClass === 'failed' ? 'times-circle' : 'clock'}"></i>
+                  ${txDetails.status}
+                </span>
+              </div>
+              <div class="tx-detail-row">
+                <span class="tx-label">Coin Type:</span>
+                <span class="tx-value">${txDetails.coinType}</span>
+              </div>
+              ${txDetails.errorMessage ? `
+              <div class="tx-detail-row error">
+                <span class="tx-label">Error:</span>
+                <span class="tx-value error-message">${txDetails.errorMessage}</span>
+              </div>` : ''}
+            </div>
+          </div>
+        `;
+
+        resultsDiv.innerHTML = `
+          <div class="transaction-list">
+            ${transactionCard}
+          </div>
+        `;
+
+       
+        document.getElementById('paginationSection').style.display = 'none';
+        
+        // Update URL with hash parameter
+        updateURLWithHash(transactionHash);
+        
+        showNotification('Transaction details loaded successfully', 'success');
+
+      } catch (error) {
+        console.error('Error loading transaction details:', error);
+        resultsDiv.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="error-message">
+              <h3>Transaction Not Found</h3>
+              <p>${error.message}</p>
+            </div>
+          </div>
+        `;
+        document.getElementById('paginationSection').style.display = 'none';
+        showNotification('Transaction not found', 'error');
+      } finally {
+        if (button && originalHTML) {
+          button.disabled = false;
+          button.innerHTML = originalHTML;
+        }
+      }
+    }
+
+    // Searched Addresses
+    async function loadSearchedAddresses() {
+      try {
+        const addresses = await searchedAddressDB.getSearchedAddresses();
+        displaySearchedAddresses(addresses);
+      } catch (error) {
+        console.error('Error loading searched addresses:', error);
+      }
+    }
+
+    function displaySearchedAddresses(addresses) {
+      const container = document.getElementById("searchedAddressesCard");
+      const list = document.getElementById("searchedAddressesList");
+
+      if (!container || !list) return;
+      
+      const searchType = document.querySelector('input[name="searchType"]:checked')?.value;
+      if (searchType === "hash") {
+        container.style.display = "none";
+        return;
+      }
+      
+      if (addresses.length === 0) {
+        container.style.display = "none";
+        return;
+      }
+
+      container.style.display = "block";
+
+      let html = "";
+      addresses.forEach((addr, index) => {
+
+        const hasSourceInfo = addr.sourceInfo && addr.sourceInfo.originalPrivateKey && addr.sourceInfo.blockchain;
+
+        html += `
+          <div class="searched-address-item ${hasSourceInfo ? "has-source-info" : ""}" data-index="${index}">
+            ${hasSourceInfo ? `
+              <div class="address-toggle-section">
+                <div class="address-toggle-group">
+                  <button onclick="toggleAddressType(${index}, '${addr.sourceInfo.blockchain.toLowerCase()}')" 
+                          class="btn-toggle-address active" 
+                          data-type="${addr.sourceInfo.blockchain.toLowerCase()}" 
+                          title="Show ${addr.sourceInfo.blockchain} Address">
+                    ${addr.sourceInfo.blockchain}
+                  </button>
+                  <button onclick="toggleAddressType(${index}, 'sui')" 
+                          class="btn-toggle-address" 
+                          data-type="sui" 
+                          title="Show SUI Address">
+                    SUI
+                  </button>
+                </div>
+              </div>
+            ` : ""}
+            <div class="address-content-wrapper">
+              <div class="address-info">
+                <div class="address-display" onclick="loadAddressFromHistory('${addr.address}')" style="cursor: pointer;" title="Click to load this address">
+                  <div class="address-text" id="address-display-${index}" title="${hasSourceInfo ? addr.sourceInfo.originalAddress : addr.address}">
+                    ${hasSourceInfo ? addr.sourceInfo.originalAddress : addr.address}
+                  </div>
+                </div>
+                <div class="address-meta">
+                  <span class="balance">
+                    <i class="fas fa-coins"></i>
+                    ${addr.formattedBalance || `${addr.balance} SUI`}
+                  </span>
+                  <span class="date">${new Date(addr.timestamp).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <div class="address-actions">
+                ${hasSourceInfo ? `
+                  <button class="action-btn copy-btn" onclick="copyCurrentAddress(${index})" title="Copy Current Display">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                ` : `
+                  <button class="action-btn copy-btn" onclick="copyToClipboard('${addr.address}')" title="Copy Address">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                `}
+                <button class="action-btn recheck-btn" onclick="recheckBalance('${addr.address}')" title="Recheck Balance">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="deleteSearchedAddress('${addr.address}')" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      list.innerHTML = html;
+    }
+
+    // Load address from searched history
+    async function loadAddressFromHistory(address) {
+      try {
+        // Validate address before loading
+        if (!address || !validators.isSuiAddress(address)) {
+          showNotification("Invalid address in history", "error");
+          return;
+        }
+
+        const addressRadio = document.querySelector('input[name="searchType"][value="address"]');
+        if (addressRadio) {
+          addressRadio.checked = true;
+          updateSearchType();
+        }
+
+        document.getElementById("searchInput").value = address;
+        await searchTransactions();
+      } catch (error) {
+        console.error("Error loading address from history:", error);
+        showNotification("Failed to load address from history", "error");
+      }
+    }
+
+    async function toggleAddressType(index, type) {
+      try {
+        const addresses = await searchedAddressDB.getSearchedAddresses();
+        const addr = addresses[index];
+        const displayElement = document.getElementById(`address-display-${index}`);
+        const item = document.querySelector(`[data-index="${index}"]`);
+
+        if (!displayElement || !addr.sourceInfo) return;
+
+        const buttons = item.querySelectorAll(".btn-toggle-address");
+        buttons.forEach((btn) => btn.classList.remove("active"));
+        item.querySelector(`[data-type="${type}"]`).classList.add("active");
+
+        if (type === "sui") {
+          displayElement.textContent = addr.address;
+          displayElement.title = addr.address;
+        } else if (type === addr.sourceInfo.blockchain.toLowerCase()) {
+          displayElement.textContent = addr.sourceInfo.originalAddress;
+          displayElement.title = addr.sourceInfo.originalAddress;
+        }
+      } catch (error) {
+        console.error("Error toggling address type:", error);
+      }
+    }
+
+    // Copy current displayed address
+    async function copyCurrentAddress(index) {
+      const displayElement = document.getElementById(`address-display-${index}`);
+      if (displayElement) {
+        await copyAddressToClipboard(displayElement.textContent);
+      }
+    }
+
+    // Copy address to clipboard
+    async function copyAddressToClipboard(address) {
+      try {
+        await navigator.clipboard.writeText(address);
+        showNotification("Address copied to clipboard", "success");
+      } catch (error) {
+        console.error("Failed to copy address:", error);
+        showNotification("Failed to copy address", "error");
+      }
+    }
+
+    // Recheck balance for an address  
+    async function recheckBalance(address) {
+      try {
+        if (!address) {
+          showNotification("Invalid address", "error");
+          return;
+        }
+
+        const addressRadio = document.querySelector('input[name="searchType"][value="address"]');
+        if (addressRadio) {
+          addressRadio.checked = true;
+          updateSearchType();
+        }
+
+        const inputElement = document.getElementById("searchInput");
+        inputElement.value = address;
+        await searchTransactions();
+      } catch (error) {
+        console.error("Failed to recheck balance:", error);
+        showNotification("Failed to load address", "error");
+      }
+    }
+
+    // Delete a searched address
+    async function deleteSearchedAddress(address) {
+      if (!searchedAddressDB) return;
+
+      if (confirm("Are you sure you want to delete this address from your search history?")) {
+        try {
+          await searchedAddressDB.deleteSearchedAddress(address);
+          await loadSearchedAddresses();
+          showNotification("Address deleted from history", "success");
+        } catch (error) {
+          console.error("Failed to delete searched address:", error);
+          showNotification("Failed to delete address", "error");
+        }
+      }
+    }
+
+    async function clearAllSearchedAddresses() {
+      if (confirm('Are you sure you want to clear all searched addresses?')) {
+        try {
+          await searchedAddressDB.clearAllSearchedAddresses();
+          loadSearchedAddresses();
+          showNotification('All addresses cleared', 'success');  
+        } catch (error) {
+          console.error('Error clearing addresses:', error);
+          showNotification('Error clearing addresses', 'error');
+        }
+      }
+    }
+
+    // Recover Wallet
+    async function recoverWallet() {
+      const privateKeyInput = document.getElementById('recoverPrivateKey');
+      const privateKey = validators.sanitizeInput(privateKeyInput.value.trim());
+      const outputDiv = document.getElementById('recoverOutput');
+      const recoverBtn = document.getElementById('recoverBtn');
+      const originalButtonText = recoverBtn.innerHTML;
+      privateKeyInput.classList.remove('error');
+      
+      if (!privateKey) {
+        privateKeyInput.classList.add('error');
+        showNotification('Please enter a private key', 'error');
+        return;
+      }
+
+      if (privateKey.startsWith('0x')) {
+        privateKeyInput.classList.add('error');
+        showNotification('Please enter a private key.', 'error');
+        return;
+      }
+
+      // Validate private key format
+      if (!validators.isPrivateKey(privateKey)) {
+        privateKeyInput.classList.add('error');
+        showNotification('Invalid private key format. Please enter a valid SUI/FLO/BTC private key', 'error');
+        return;
+      }
+
+      if (recoverBtn.disabled) {
+        return;
+      }
+
+      recoverBtn.disabled = true;
+      recoverBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recovering...';
+      
+      outputDiv.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i> Recovering wallet...</div>';
+
+      try {
+        const wallet = await suiCrypto.generateMultiChain(privateKey);
+        
+        // Validate recovered wallet
+        if (!wallet || !wallet.SUI || !wallet.BTC || !wallet.FLO) {
+          throw new Error('Invalid wallet recovered - missing blockchain data');
+        }
+
+        if (!validators.isSuiAddress(wallet.SUI.address)) {
+          throw new Error('Invalid SUI address recovered');
+        }
+
+        currentWallet = wallet;
+
+        outputDiv.innerHTML = `
+          <div class="wallet-generated-success">
+            <div class="success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+            <div class="success-message">
+              <h3>Wallet Recovered Successfully!</h3>
+              <p>Your multi-chain wallet has been imported from the provided private key.</p>
+            </div>
+          </div>
+          
+          <div class="blockchain-section">
+            <div class="blockchain-header">
+              <h4><i class="fas fa-coins"></i> SUI</h4>
+              <span class="blockchain-badge primary">Primary</span>
+            </div>
+            <div class="detail-row">
+              <label>Address:</label>
+              <div class="value-container">
+                <code>${wallet.SUI.address}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.SUI.address}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="detail-row">
+              <label>Private Key:</label>
+              <div class="value-container">
+                <code>${wallet.SUI.privateKey}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.SUI.privateKey}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="blockchain-section">
+            <div class="blockchain-header">
+              <h4><i class="fab fa-bitcoin"></i> Bitcoin</h4>
+              <span class="blockchain-badge secondary">Secondary</span>
+            </div>
+            <div class="detail-row">
+              <label>Address:</label>
+              <div class="value-container">
+                <code>${wallet.BTC.address}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.BTC.address}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="detail-row">
+              <label>Private Key:</label>
+              <div class="value-container">
+                <code>${wallet.BTC.privateKey}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.BTC.privateKey}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="blockchain-section">
+            <div class="blockchain-header">
+              <h4><i class="fas fa-leaf"></i> FLO</h4>
+              <span class="blockchain-badge secondary">Secondary</span>
+            </div>
+            <div class="detail-row">
+              <label>Address:</label>
+              <div class="value-container">
+                <code>${wallet.FLO.address}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.FLO.address}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="detail-row">
+              <label>Private Key:</label>
+              <div class="value-container">
+                <code>${wallet.FLO.privateKey}</code>
+                <button class="btn-icon" onclick="copyToClipboard('${wallet.FLO.privateKey}')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        showNotification('Wallet recovered successfully!', 'success');
+      } catch (error) {
+        console.error('Error recovering wallet:', error);
+        privateKeyInput.classList.add('error');
+        
+        let errorMessage = 'Recovery failed';
+        if (error.message.includes('Invalid') || error.message.includes('private key')) {
+          errorMessage = 'Invalid private key. Please check the format and try again.';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        }
+        
+        outputDiv.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="error-message">
+              <h3>Recovery Failed</h3>
+              <p>${validators.sanitizeInput(errorMessage)}</p>
+              <div class="error-help">
+                <p><strong>Troubleshooting:</strong></p>
+                <ul>
+                  <li>Ensure the private key is in the correct format</li>
+                  <li>Check your internet connection</li>
+                  <li>Try copying and pasting the key again</li>
+                  <li>Remove any extra spaces or characters</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+        showNotification('Failed to recover wallet', 'error');
+      } finally {
+        recoverBtn.disabled = false;
+        recoverBtn.innerHTML = originalButtonText;
+      }
+    }
+
+    function clearPreviousSendResults() {
+      const sendOutput = document.getElementById('sendOutput');
+      if (sendOutput && sendOutput.innerHTML.trim() !== '') {
+        sendOutput.innerHTML = '';
+      }
+    }
+
+    function clearPreviousRecoverResults() {
+      const recoverOutput = document.getElementById('recoverOutput');
+      if (recoverOutput && recoverOutput.innerHTML.trim() !== '') {
+        recoverOutput.innerHTML = '';
+      }
+    }
+
+    function clearPreviousSearchResults() {
+      const searchInput = document.getElementById('searchInput');
+      const currentValue = searchInput.value.trim();
+      
+      if (currentValue.length > 0) {
+        const transactionResults = document.getElementById('transactionResults');
+        const paginationSection = document.getElementById('paginationSection');
+        
+        if (transactionResults && transactionResults.innerHTML.includes('transaction-card')) {
+          transactionResults.innerHTML = '';
+        }
+        
+        if (paginationSection && paginationSection.style.display !== 'none') {
+          paginationSection.style.display = 'none';
+        }
+      }
+    }
+
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      const icon = input.nextElementSibling.querySelector('i');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+
+    function clearInput(inputId) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.value = '';
+        input.classList.remove('error', 'success', 'warning');
+        input.focus();
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showNotification('Copied to clipboard!', 'success');
+      }).catch(() => {
+        showNotification('Failed to copy', 'error');
+      });
+    }
+
+    let lastNotification = { message: '', time: 0 };
+    
+    function showNotification(message, type = 'info') {
+      const now = Date.now();
+      if (lastNotification.message === message && (now - lastNotification.time) < 1000) {
+        return;
+      }
+      
+      lastNotification = { message, time: now };
+      
+      const drawer = document.getElementById('notificationDrawer');
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+      `;
+      
+      drawer.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.remove();
+      }, 4000);
+    }
+
+    // Mobile responsive adjustments
+    function handleResize() {
+      // Close sidebar on desktop view
+      if (window.innerWidth > 768) {
+        document.getElementById('sidebar').classList.remove('active');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+  </script>
+</body>
+</html>
