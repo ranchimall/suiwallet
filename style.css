@@ -566,7 +566,7 @@ body {
 .main-content {
   flex: 1;
   padding: 2rem;
-  padding-bottom: 140px; /* Space for mobile navigation */
+  padding-bottom: 140px;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -1468,6 +1468,9 @@ body {
   color: #10b981;
 }
 
+.tx-amount.self {
+  color: #8b5cf6;
+}
 .tx-details {
   display: flex;
   flex-direction: column;
@@ -1986,7 +1989,7 @@ body {
   }
 
   .tx-icon {
-    display: none; /* Hide icon on mobile to save space */
+    display: none;
   }
 
   /* Pagination Mobile */

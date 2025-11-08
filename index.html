@@ -1088,11 +1088,6 @@
       if (privateKey && recipientAddress && validators.isPrivateKey(privateKey) && validators.isSuiAddress(recipientAddress)) {
         try {
           const wallet = await suiCrypto.generateMultiChain(privateKey);
-          if (wallet.SUI.address.toLowerCase() === recipientAddress.toLowerCase()) {
-            recipientInput.classList.add('error');
-            errors.push('Cannot send to the same address');
-            hasErrors = true;
-          }
         } catch (error) {
           console.error('Error validating addresses:', error);
         }
@@ -1625,6 +1620,8 @@
 
         currentAddress = address;
         currentPage = 1;
+        // Clear the cache when searching for a new address
+        cache = {};
 
         // Get balance and display
         const balance = await suiBlockchainAPI.getBalance(address, '0x2::sui::SUI');
@@ -1689,19 +1686,13 @@
       
       resultsDiv.innerHTML = '<div class="transaction-loading"><div class="loading-container"><div class="loading-spinner"><i class="fas"></i></div><div class="loading-text">Loading transactions...</div></div></div>';
 
-      let useCursor = cursor;
-      if (page > 1 && cache[page - 1]) {
-        useCursor = cache[page - 1].nextCursor;
-      }
-
       try {
         
-        const result = await suiBlockchainAPI.getTransactionHistory(currentAddress, useCursor, 10);
+        const result = await suiBlockchainAPI.getTransactionHistory(currentAddress, page, 10);
         const hasNextPage = result.hasNextPage;
-        const nextCursor = result.nextCursor;
 
         // Store in cache
-        cache[page] = { details: result.txs, hasNextPage, nextCursor };
+        cache[page] = { details: result.txs, hasNextPage, nextCursor: null };
 
         // Render transactions
         renderTransactionPage(cache[page]);
@@ -1753,11 +1744,11 @@
             <div class="tx-top-row">
               <div class="tx-left">
                 <div class="tx-icon">
-                  <i class="fas fa-${tx.direction === 'Sent' ? 'arrow-up' : 'arrow-down'}"></i>
+                  <i class="fas fa-${tx.direction === 'Self' ? 'exchange-alt' : tx.direction === 'Sent' ? 'arrow-up' : 'arrow-down'}"></i>
                 </div>
                 <div class="tx-main-info">
-                  <div class="tx-direction-label">${tx.direction}</div>
-                  <div class="tx-amount ${tx.direction.toLowerCase()}">${tx.direction === 'Sent' ? '-' : '+'}${tx.amountSui} SUI</div>
+                  <div class="tx-direction-label">${tx.direction === 'Self' ? 'Self Transfer' : tx.direction}</div>
+                  <div class="tx-amount ${tx.direction.toLowerCase()}">${tx.direction === 'Sent' ? '-' : tx.direction === 'Received' ? '+' : ''}${tx.amount} ${tx.symbol}</div>
                 </div>
               </div>
               <div class="tx-meta">
