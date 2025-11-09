@@ -1668,6 +1668,15 @@
         await loadTransactionsPage(currentPage);
         updateURLWithAddress(address);
         
+        // Switch to transactions tab for address searches
+        showPage('transactions');
+        
+        // Update active states for navigation
+        const navLinks = document.querySelectorAll('.nav-link, .nav-btn');
+        navLinks.forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`.nav-link[data-page="transactions"], .nav-btn[data-page="transactions"]`)
+          .forEach(l => l.classList.add('active'));
+        
         showNotification('Loaded successfully!', 'success');
 
       } catch (error) {
@@ -1912,6 +1921,15 @@
         
         // Update URL with hash parameter
         updateURLWithHash(transactionHash);
+        
+        // Switch to transactions tab for hash searches
+        showPage('transactions');
+        
+        // Update active states for navigation
+        const navLinks = document.querySelectorAll('.nav-link, .nav-btn');
+        navLinks.forEach(l => l.classList.remove('active'));
+        document.querySelectorAll(`.nav-link[data-page="transactions"], .nav-btn[data-page="transactions"]`)
+          .forEach(l => l.classList.add('active'));
         
         showNotification('Transaction details loaded successfully', 'success');
 
